@@ -1,9 +1,9 @@
 import pygame, sys
-from code.player import Player
+from player import Player
 
 class Game:
 	def __init__(self):
-		player_sprite = Player((screen_width/2, screen_height))
+		player_sprite = Player((screen_width / 2, screen_height-25))
 		self.player = pygame.sprite.GroupSingle(player_sprite)
 
 	def run(self):
