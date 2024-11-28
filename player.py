@@ -16,6 +16,9 @@ class Player(pygame.sprite.Sprite):
 
         self.lasers = pygame.sprite.Group()
 
+        self.laser_sound = pygame.mixer.Sound('audio/laser.wav')
+        self.laser_sound.set_volume(0.05)
+
     def get_input(self):
         keys = pygame.key.get_pressed()
 
@@ -34,6 +37,7 @@ class Player(pygame.sprite.Sprite):
             self.shoot_laser()
             self.shoot_ready = False
             self.laser_time = pygame.time.get_ticks()
+            self.laser_sound.play()
     
     def recharge(self):
         if not self.shoot_ready:
@@ -44,11 +48,9 @@ class Player(pygame.sprite.Sprite):
             #current_time = pygame.time.get_ticks()
             #if current_time - self.move_time >= self.cooldown:
                 #self.move_ready = True
-        
 
     def shoot_laser(self):
         self.lasers.add(Laser(self.rect.center, -8, self.rect.bottom))
-
 
     def constraint(self):
         if self.rect.left <= 0:

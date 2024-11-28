@@ -35,6 +35,15 @@ class Game:
 		#Extra setup
 		self.extra = pygame.sprite.GroupSingle()
 		self.extra_spawn_time = randint(400,800)
+
+		#Audio
+		music = pygame.mixer.Sound('audio/music.wav')
+		music.set_volume(0.03)
+		music.play(loops = -1)
+		self.laser_sound = pygame.mixer.Sound('audio/laser.wav')
+		self.laser_sound.set_volume(0.05)
+		self.explosion_sound = pygame.mixer.Sound('audio/explosion.wav')
+		self.explosion_sound.set_volume(0.05)
 	
 	def create_obstacle(self, x_start, y_start, offset_x):
 		for row_index, row in enumerate(self.shape):
@@ -80,6 +89,7 @@ class Game:
 			random_alien = choice(self.aliens.sprites())
 			laser_sprite = Laser(random_alien.rect.center, 6, screen_height)
 			self.alien_lasers.add(laser_sprite)
+			self.laser_sound.play()
 
 	def extra_alien_timer(self):
 		self.extra_spawn_time -= 1
@@ -101,6 +111,7 @@ class Game:
 					for alien in aliens_hit:
 						self.score += alien.value
 					laser.kill()
+					self.explosion_sound.play()
 
 				#extra collisions
 				if pygame.sprite.spritecollide(laser, self.extra, True):
@@ -160,7 +171,22 @@ class Game:
 		self.display_score()
 		#update and draw all sprite groups
 
+class CRT:
+	def __init__(self):
+		self.tv = pygame.image.load('graphics/tv.png').convert_alpha()
+		self.tv = pygame.transform.scale(self.tv, (screen_width, screen_height))
 
+	def create_crt_lines(self):
+		line_height = 3
+		line_amount = int(screen_height / line_height)
+		for line in range(line_amount):
+			y_pos = line*line_height
+			pygame.draw.line(self.tv, 'black', (0, y_pos), (screen_width, y_pos), 1)
+	
+	def draw(self):
+		self.tv.set_alpha(randint(75, 90))
+		self.create_crt_lines()
+		screen.blit(self.tv, (0,0))
 
 if __name__ == '__main__':
 	pygame.init()
@@ -169,6 +195,7 @@ if __name__ == '__main__':
 	screen = pygame.display.set_mode((screen_width,screen_height))
 	clock = pygame.time.Clock()
 	game = Game()
+	crt = CRT()
 
 	ALIENLASER = pygame.USEREVENT + 1
 	pygame.time.set_timer(ALIENLASER,800)
@@ -183,6 +210,8 @@ if __name__ == '__main__':
 		
 		screen.fill((30,30,30))
 		game.run()
+		crt.draw()
 
 		pygame.display.flip()
 		clock.tick(60)
+ 
