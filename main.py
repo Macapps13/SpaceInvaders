@@ -1,8 +1,9 @@
 import pygame, sys
 from player import Player
 import obstacle
-from alien import Alien
-from random import choice
+from alien import Alien, Extra
+from laser import Laser
+from random import choice, randint
 
 class Game:
 	def __init__(self):
@@ -20,8 +21,13 @@ class Game:
 
 		#Alien setup
 		self.aliens = pygame.sprite.Group()
+		self.alien_lasers = pygame.sprite.Group()
 		self.alien_setup(rows = 6, cols = 8)
 		self.alien_direction = 1
+		
+		#Extra setup
+		self.extra = pygame.sprite.GroupSingle()
+		self.extra_spawn_time = randint(400,800)
 	
 	def create_obstacle(self, x_start, y_start, offset_x):
 		for row_index, row in enumerate(self.shape):
@@ -62,20 +68,34 @@ class Game:
 			for alien in self.aliens.sprites():
 				alien.rect.y += distance
 
-	def alien_shoow(self):
+	def alien_shoot(self):
 		if self.aliens.sprites():
 			random_alien = choice(self.aliens.sprites())
+			laser_sprite = Laser(random_alien.rect.center, 6, screen_height)
+			self.alien_lasers.add(laser_sprite)
+
+	def extra_alien_timer(self):
+		self.extra_spawn_time -= 1
+		if self.extra_spawn_time <= 0:
+			self.extra.add(Extra(choice(['right', 'left']), screen_width))
+			self.extra_spawn_time = randint(400,800)
 
 	def run(self):
 		self.player.update()
 		self.aliens.update(self.alien_direction)
 		self.alien_position_checker()
+		self.alien_lasers.update()
+		self.extra_alien_timer()
+		self.extra.update()
+
 
 		self.player.sprite.lasers.draw(screen)
 		self.player.draw(screen)
 
 		self.blocks.draw(screen)
 		self.aliens.draw(screen)
+		self.alien_lasers.draw(screen)
+		self.extra.draw(screen)
 		#update and draw all sprite groups
 
 
@@ -88,11 +108,16 @@ if __name__ == '__main__':
 	clock = pygame.time.Clock()
 	game = Game()
 
+	ALIENLASER = pygame.USEREVENT + 1
+	pygame.time.set_timer(ALIENLASER,800)
+
 	while True:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit(0)
+			if event.type == ALIENLASER:
+				game.alien_shoot()
 		
 		screen.fill((30,30,30))
 		game.run()
